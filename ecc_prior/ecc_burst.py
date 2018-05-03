@@ -153,7 +153,7 @@ class EccBurst(object):
         never include bursts outside of time window
         """
         bursts = [[tstar, fstar]]
-        
+
         # get forward bursts
         t, f, rp, de = tstar, fstar, rpstar, destar
         while rp > 3 and t < tmax:
@@ -170,9 +170,16 @@ class EccBurst(object):
 
     def get_cov(f, rho=0):
         """get covariance matrix for ellipsoid in t-f plane
+
+        The Fourier uncertainty principle says that dt*df <= 1/(4pi).
+        Each burst is highly localized in time and covers a large
+        bandwidth. The GWs are emitted primarily at pericenter with a
+        characteristic timescale of T ~ 1/(2pi f).  The bandwidth is
+        then ~f/2.
+
         :param f: GW freq of this burst
         :param rho: correlation coefficient
         """
-        dF = f / 6
-        dT = 1 / (2*np.pi*f) / 6
+        dF = f / 2
+        dT = 1 / (2*np.pi*f)
         cov = np.array([[dT**2, dT*dF*rho], [dT*dF*rho, dF**2]])
