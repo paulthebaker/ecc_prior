@@ -1,7 +1,7 @@
 =========
 ecc_prior
 =========
-.. image:: https://img.shields.io/badge/python-2.7%2C%203.5%2C%203.6-blue.svg
+.. image:: https://img.shields.io/badge/python-2.7%2C%203.6-blue.svg
 
 Compute a prior for repeated bursts of GWs from highly eccentric binary systems.
 
