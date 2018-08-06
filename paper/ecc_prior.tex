@@ -1,0 +1,115 @@
+\documentclass[prd,
+               reprint,
+               letterpaper,
+               groupedaddress,
+               linenumbers
+              ]{revtex4-1}
+
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{amsmath,amssymb}
+\usepackage{acronym}
+\usepackage{hyperref}
+
+
+\usepackage{blindtext}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% EDITOR NOTES:
+\newcommand{\todo}{\textcolor{red}}
+\newcommand{\CiteNeed}{\textcolor{red}{\scriptsize[citation needed]}}
+\newcommand{\CheckMe}{\textcolor{orange}{\scriptsize[check me]}}
+\renewcommand{\check}{\textcolor{orange}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% BETTER DATE:
+\renewcommand{\today}{\number\day\space\ifcase\month\or
+  January\or February\or March\or April\or May\or June\or
+  July\or August\or September\or October\or November\or December\fi
+  \space\number\year}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% ACRONYMS
+\def\gw{gravitational wave}
+\def\gws{gravitational waves}
+\def\GW{Gravitational Wave}
+\def\GWs{Gravitational Waves}
+\newacro{SNR}{signal-to-noise ratio}
+\def\SNR{\ac{SNR}}
+\newacro{BNS}{binary neutron star}
+\def\BNS{\ac{BNS}}
+\newacro{BBH}{binary black hole}
+\def\BBH{\ac{BBH}}
+
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% FRONT MATTER
+\title{Detecting Highly-Eccentric Binaries with a Gravitational Wave Burst Search}
+
+\author{Paul T.~Baker}
+\email[]{paul.baker1@mail.wvu.edu}
+\author{Belinda~Cheeseboro}
+\author{Sean T.~McWilliams}
+\affiliation{Center for Gravitational Waves and Cosmology, West Virginia University, Morgantown, WV 26505, USA}
+\affiliation{Department of Physics and Astronomy, West Virginia University, Morgantown, WV 26505, USA}
+%\altaffiliation{}
+
+\date{\today}
+
+\begin{abstract}
+This is an abstract.
+Hightly eccentric binaries produce distinct bursts at pericenter crossing.
+Connect individual bursts with a prior on their time and frequency content.
+\end{abstract}
+
+% insert suggested PACS numbers in braces on next line
+\pacs{04.30.-w, 04.80.Nn, 07.05.Kf, 95.55.Ym}
+
+\maketitle
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Introduction
+\section{Introduction}
+\label{sec:intro}
+\input{sec_01_intro.tex}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Waveform Model
+\section{Waveform Model}
+\label{sec:model}
+\input{sec_02_model}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Recovery of Signals / Meta-parameters
+\section{Recovery of Signals}
+\label{sec:recov}
+\input{sec_03_recov}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Discussion
+\section{Discussion}
+\label{sec:discuss}
+\input{sec_03_recov}
+
+
+% Specify following sections are appendices. Use \appendix* if there
+% is only one appendix.
+%\appendix
+%\section{}
+
+% If you have acknowledgments, this puts in the proper section head.
+%\begin{acknowledgments}
+% put your acknowledgments here.
+%\end{acknowledgments}
+
+% Create the reference section using BibTeX:
+\bibliography{biblio.bib}
+
+\end{document}
+

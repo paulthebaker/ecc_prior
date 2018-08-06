@@ -1,6 +1,14 @@
 # text editor tmp files
 .*.swp
 
+# latex output
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.bbl
+paper/*.blg
+paper/*Notes.bib
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
