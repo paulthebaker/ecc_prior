@@ -4,6 +4,9 @@ compute centroids of repeated eccentric bursts
 Forward evolution from Loutrel & Yunes 2017. Algebraic inversions
 for backward evolution by BC.
 """
+from __future__ import (absolute_import, division,
+                        print_function, unicode_literals)
+
 __author__ = "Belinda Cheeseboro, Paul T. Baker"
 #__copyright__ = ""
 #__license__ = ""
@@ -147,12 +150,13 @@ class EccBurst(object):
         else:
             return t0, f0
 
-    def get_all_bursts(self, tstar, fstar, rpstar, destar, tmin, tmax):
+    def get_all_bursts(self, tstar, fstar, destar, tmin, tmax):
         """get all bursts in time window from start to ISCO
         include one post ISCO burst if it fits in time window
         never include bursts outside of time window
         """
         bursts = [[tstar, fstar]]
+        rpstar =  ((2-destar)/(2*np.pi*fstar)**2)**(1/3)
 
         # get forward bursts
         t, f, rp, de = tstar, fstar, rpstar, destar
