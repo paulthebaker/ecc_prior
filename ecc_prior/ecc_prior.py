@@ -107,12 +107,13 @@ class Prior(object):
         icovs = [np.linalg.inv(c) for c in covs]
         norms = [1/(2*np.pi * np.sqrt(np.linalg.det(c))) for c in covs]
 
+        norm_N = -np.log(len(tf_prior_SI)) # normalize for number of blobs
         log_prob = 0
         for this_tf in tf_from_BW:
             rs = this_tf - tf_prior_SI
             args = [-0.5 * np.einsum('i,ij,j', r, ic, r)
                     for r,ic in zip(rs, icovs)]
-            log_prob += logsumexp(a=args)#, b=norms)
+            log_prob += norm_N + logsumexp(a=args)#, b=norms)
         return log_prob
 
 
