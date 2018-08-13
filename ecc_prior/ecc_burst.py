@@ -18,6 +18,7 @@ import numpy as np
 
 class EccBurst(object):
     _min_de = 1.0e-3
+    _max_de = 0.9
     
     def __init__(self, q):
         """calculate t,f of eccentric bursts
@@ -73,10 +74,10 @@ class EccBurst(object):
         r1 = r0*(1 - A * (1/r0)**(5/2) * (1 + B*de0))
         de1 = de0 + C * (1/r0)**(5/2) * (1 - D*de0)
 
-        if de1 > 1:
+        if de1 > self._max_de:
             #print("de WARNING: de = {:.3e}, setting de = 1"
             #      .format(de1))
-            de1 = 1
+            de1 = self._max_de 
   
         return r1, de1
   
