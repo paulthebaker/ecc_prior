@@ -10,9 +10,7 @@ from __future__ import (absolute_import, division,
 __author__ = "Belinda Cheeseboro, Paul T. Baker"
 #__copyright__ = ""
 #__license__ = ""
-__version__ = "2018-04-12"
-#__maintainer__ = ""
-#__email__ = ""
+__version__ = "2018-08-15"
 
 import numpy as np
 
@@ -30,7 +28,7 @@ class EccBurst(object):
         self._Mchirp = q**(3/5)/(1+q)**(6/5)
 
         # Define constants
-        self._A = 59/24*np.pi*np.sqrt(2) * (self._Mchirp)**(5/3)
+        self._A = 59/24 * np.pi*np.sqrt(2) * (self._Mchirp)**(5/3)
         self._B = 121/236
         self._C = 85/12 * np.pi*np.sqrt(2) * (self._Mchirp)**(5/3)
         self._D = 1718/1800
@@ -53,11 +51,9 @@ class EccBurst(object):
         self._q = value
         self._Mchirp = (self._q/(1+self._q)**2)**(3/5)
 
-        # Define constants
-        self._A = 59/24*np.pi*np.sqrt(2) * (self._Mchirp)**(5/3)
-        self._B = 121/236
+        # recompute A,C constants
+        self._A = 59/24 * np.pi*np.sqrt(2) * (self._Mchirp)**(5/3)
         self._C = 85/12 * np.pi*np.sqrt(2) * (self._Mchirp)**(5/3)
-        self._D = 1718/1800
 
     def re_forward(self, r0, de0):
         """calculate r and de of next burst
@@ -67,7 +63,7 @@ class EccBurst(object):
         :param de0:
             instantaneous eccentricity of current burst
             de = 1 - e
-        :returns (r1, de1): next burst r and de
+        :return: tuple (r1, de1), next burst r and de
         """
         A, B, C, D = self._A, self._B, self._C, self._D
     
@@ -89,7 +85,7 @@ class EccBurst(object):
         :param de1:
             instantaneous eccentricity of current burst
             de = 1 - e
-        :returns (r0, de0): previous burst r and de
+        :return: tuple (r0, de0), previous burst r and de
         """
         A, B, C, D = self._A, self._B, self._C, self._D
 
