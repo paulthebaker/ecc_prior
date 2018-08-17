@@ -40,6 +40,16 @@ def _q_from_Mc(Mc, Mtot, convention='neg'):
         raise ValueError(msg.format(convention))
     return q
 
+def _rp_kepler(de, f, M):
+    """Compute pericenter separation rp for a keplerian orbit corresponding
+    to a burst in units of total mass.
+
+    :param de: instantaneous eccentricity of current burst (de = 1 - e)
+    :param f: instantaneous GW frequency of burst
+    :param M: total mass of system
+    """
+    return ((2-de)/(2*np.pi*f*M*_Tsun)**2)**(1/3)
+
 
 class Prior(object):
     """An object to calculate the eccentric binary prior
@@ -80,6 +90,10 @@ class Prior(object):
         
         this_q = _q_from_Mc(Mc, Mtot)
         if this_q <= 0 or this_q > 1:
+            return -np.inf
+
+        this_rp = _rp_kepler(destar, fstar, Mtot)
+        if this_rp <= 2:
             return -np.inf
 
         self._eb.q = this_q
