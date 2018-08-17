@@ -49,11 +49,12 @@ class EccBurst(object):
             raise ValueError("q = {}.  Mass ratio defined as: 0 < q <= 1"
                              .format(value))
         self._q = value
+        old_Mc = self._Mchirp
         self._Mchirp = (self._q/(1+self._q)**2)**(3/5)
 
         # recompute A,C constants
-        self._A = 59/24 * np.pi*np.sqrt(2) * (self._Mchirp)**(5/3)
-        self._C = 85/12 * np.pi*np.sqrt(2) * (self._Mchirp)**(5/3)
+        self._A *= (self._Mchirp/old_Mc)**(5/3)
+        self._C *= (self._Mchirp/old_Mc)**(5/3)
 
     def re_forward(self, r0, de0):
         """calculate r and de of next burst
