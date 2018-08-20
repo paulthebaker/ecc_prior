@@ -17,11 +17,11 @@ import numpy as np
 class EccBurst(object):
     _min_de = 1.0e-3
     _max_de = 0.9
-    
+
     def __init__(self, q):
         """calculate t,f of eccentric bursts
         Always work in units of total mass!! (Mtot=1)
-        
+
         :param q: mass ratio of bursts
         """
         self.q = q
@@ -32,7 +32,7 @@ class EccBurst(object):
         self._B = 121/236
         self._C = 85/12 * np.pi*np.sqrt(2) * (self._Mchirp)**(5/3)
         self._D = 1718/1800
-    
+
     @property
     def Mchirp(self):
         """binary chirp mass in units of total mass"""
@@ -67,17 +67,17 @@ class EccBurst(object):
         :return: tuple (r1, de1), next burst r and de
         """
         A, B, C, D = self._A, self._B, self._C, self._D
-    
+
         r1 = r0*(1 - A * (1/r0)**(5/2) * (1 + B*de0))
         de1 = de0 + C * (1/r0)**(5/2) * (1 - D*de0)
 
         if de1 > self._max_de:
             #print("de WARNING: de = {:.3e}, setting de = 1"
             #      .format(de1))
-            de1 = self._max_de 
-  
+            de1 = self._max_de
+
         return r1, de1
-  
+
     def re_backward(self, r1, de1):
         """calculate r and de of previous burst
         from Cheeseboro
@@ -97,7 +97,7 @@ class EccBurst(object):
             #print("de WARNING: de = {:.3e}, setting de = {:.3e}"
             #      .format(de0, self._min_de))
             de0 = self._min_de
-  
+
         return r0, de0
 
     def re_valid(self, r, de):
@@ -142,7 +142,7 @@ class EccBurst(object):
         t0 = t1 - (1/f1) * np.sqrt((2 - de1)/de1**3)
         f0 = f1 * np.sqrt((2 - de0)/(2 - de1) * (r1/r0)**3)
         f0 = np.sqrt((2-de0)/r0**3) / (2*np.pi)
-        
+
         if re:
             return t0, f0, r0, de0
         else:

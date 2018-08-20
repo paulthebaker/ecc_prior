@@ -59,7 +59,7 @@ class Prior(object):
 
     def __init__(self, tmin=-2, tmax=2):
         """initialize a Prior object
-        
+
         :param tmin: min time to search for bursts [sec]
         :param tmax: max time to search for bursts [sec]
         """
@@ -87,7 +87,7 @@ class Prior(object):
             tstar < self._tmin or tstar > self._tmax or
             fstar <= 0):
             return -np.inf
-        
+
         this_q = _q_from_Mc(Mc, Mtot)
         if this_q <= 0 or this_q > 1:
             return -np.inf
@@ -133,7 +133,7 @@ class Prior(object):
 
     def get_prior(self, tf_from_BW, Mtot, Mc, destar, tstar, fstar):
         """Prior probability for wavelets in BayesWave model given
-        astrophysically motivated meta-parameters. This is not 
+        astrophysically motivated meta-parameters. This is not
         normalized correctly for variable number of wavelets.
 
         :param tf_from_BW: list of tuples; t,f for each wavelet
