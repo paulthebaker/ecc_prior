@@ -24,7 +24,10 @@ class EccBurst(object):
 
         :param q: mass ratio of bursts
         """
-        self.q = q
+        if q <= 0 or q > 1.0:
+            raise ValueError("q = {}.  Mass ratio defined as: 0 < q <= 1"
+                             .format(value))
+        self._q = q
         self._Mchirp = q**(3/5)/(1+q)**(6/5)
 
         # Define constants
