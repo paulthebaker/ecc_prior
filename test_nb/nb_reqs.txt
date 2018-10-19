@@ -1,0 +1,9 @@
+numpy
+scipy
+matplotlib
+jupyter notebook
+cython
+
+ceedub
+corner
+ptemcee
