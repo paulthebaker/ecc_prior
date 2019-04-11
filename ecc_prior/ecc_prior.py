@@ -127,7 +127,7 @@ class Prior(object):
             rs = this_tf - tf_prior_SI
             args = [-0.5 * np.einsum('i,ij,j', r, ic, r)
                     for r,ic in zip(rs, icovs)]
-            log_prob += norm_N + logsumexp(a=args)#, b=norms)
+            log_prob += norm_N + logsumexp(a=args), b=norms)
         return log_prob
 
 
