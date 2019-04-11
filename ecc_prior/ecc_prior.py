@@ -127,7 +127,7 @@ class Prior(object):
             rs = this_tf - tf_prior_SI
             args = [-0.5 * np.einsum('i,ij,j', r, ic, r)
                     for r,ic in zip(rs, icovs)]
-            log_prob += norm_N + logsumexp(a=args), b=norms)
+            log_prob += norm_N + logsumexp(a=args, b=norms)
         return log_prob
 
 
@@ -227,6 +227,7 @@ class NewPrior(object):
  
         #Calculate inverse covariance matrices for bursts
         icovs = self.get_all_icovs(tstarM, fstarM, destar, tminM, tmaxM, anchor_cov, Mtot, Mc)
+        norms = [np.sqrt(np.linalg.det(c)) / (2*np.pi) for c in icovs]
         
         norm_N = -np.log(len(tf_prior_SI)) # normalize for number of blobs
         log_prob = 0
@@ -234,7 +235,7 @@ class NewPrior(object):
             rs = this_tf - tf_prior_SI
             args = [-0.5 * np.einsum('i,ij,j', r, ic, r)
                     for r,ic in zip(rs, icovs)]
-            log_prob += norm_N + logsumexp(a=args)#, b=norms)
+            log_prob += norm_N + logsumexp(a=args, b=norms)
         return log_prob
 
 
