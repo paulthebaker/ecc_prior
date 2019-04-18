@@ -6,4 +6,4 @@ cython
 
 ceedub
 corner
-ptemcee
+emcee
