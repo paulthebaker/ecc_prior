@@ -68,6 +68,49 @@ class EccBurst(object):
         """
         return ((2-de)/(2*np.pi*f)**2)**(1/3)
 
+    def tfe_forward(self, t0, f0, de0):
+        """calculate the time, freq, and ecc of next burst
+       
+        directly calculate using new 1st order equations, bypassing rp used
+        by Loutrel & Yunes.
+
+        :param t0: time of current burst
+        :param f0: freq of current burst
+        :param de0: eccentricity of current burst (de = 1-e)
+        :return: tuple (t1, f1, de1), params for next burst
+        """
+        Po223 = np.pi/2**(2/3)
+        PfM53 = (np.pi * f0 * self._Mchirp)**(5/3)
+
+        t1 = t0 + np.sqrt((2-de0) / de0**3) / f0
+        f1 = f0 * (1 + 23/3 * Po223*PfM53 *
+                   (1 + 7547/4140*de0 + 3725/552*Po223*PfM53))
+        de1 = de0 + 85/3 * Po223*PfM53 * (1 - 121/225*de0)
+
+        return (t1, f1, de1)
+
+    def tfe_backward(self, t1, f1, de1):
+        """calculate the time, freq, and ecc of previous burst
+       
+        directly calculate using new 1st order equations, bypassing rp used
+        by Loutrel & Yunes.
+
+        :param t1: time of current burst
+        :param f1: freq of current burst
+        :param de1: eccentricity of current burst (de = 1-e)
+        :return: tuple (t0, f0, de0), params for previous burst
+        """
+        Po223 = np.pi/2**(2/3)
+        PfM53 = (np.pi * f1 * self._Mchirp)**(5/3)
+
+        t0 = t1 - np.sqrt((2-de1) / de1**3) / f1
+        f0 = f1 * (1 - 23/3 * Po223*PfM53
+                   * (1 + 7547/4140*de1 + 5875/368*Po223*PfM53))
+        de0 = de1 - (85/3 * Po223*PfM53 
+                     * (1 - 121/225*de1 - 295/12*Po223*PfM53))
+
+        return (t0, f0, de0)
+
     def re_forward(self, r0, de0):
         """calculate r and de of next burst
         from Loutrel & Yunes 2017
