@@ -203,26 +203,49 @@ class EccBurst(object):
         else:
             return t0, f0
 
-    def get_all_bursts(self, tstar, fstar, destar, tmin, tmax):
+    def get_all_bursts_old(self, tstar, fstar, destar, tmin, tmax):
         """get all bursts in time window from start to ISCO
         include one post ISCO burst if it fits in time window
         never include bursts outside of time window
         """
-        bursts = [[tstar, fstar]]
-        rpstar =  ((2-destar)/(2*np.pi*fstar)**2)**(1/3)
+        bursts = [[tstar, fstar, destar]]
+        rpstar = self._rp_kepler(destar, fstar)
 
         # get forward bursts
         t, f, rp, de = tstar, fstar, rpstar, destar
         while rp > 3 and t < tmax:
             t, f, rp, de = self.tf_forward(t, f, rp, de)
-            if(t<tmax): bursts.append([t, f])
+            if(t<tmax): bursts.append([t, f, de])
 
         # get backward busrts
         t, f, rp, de = tstar, fstar, rpstar, destar
-        while t > tmin:
+        while t > tmin and de > 0:
             t, f, rp, de = self.tf_backward(t, f, rp, de)
-            if(t>tmin): bursts.insert(0, [t, f]) # prepend
+            if(t>tmin): bursts.insert(0, [t, f, de]) # prepend
 
+        return bursts
+    
+    def get_all_bursts(self, tstar, fstar, destar, tmin, tmax):
+        """get all bursts in time window from start to ISCO
+        include one post ISCO burst if it fits in time window
+        never include bursts outside of time window
+        """
+        bursts = [[tstar, fstar, destar]]
+        rpstar = self._rp_kepler(destar, fstar)
+
+        # get forward bursts
+        t, f, de, rp = tstar, fstar, destar, rpstar
+        while rp > 3 and t < tmax:
+            t, f, de = self.tfe_forward(t, f, de)
+            rp = self._rp_kepler(de, f)
+            if(t<tmax): bursts.append([t, f, de])
+
+        # get backward busrts
+        t, f, rp, de = tstar, fstar, rpstar, destar
+        while t > tmin and de > 0:
+            t, f, de = self.tfe_backward(t, f, de)
+            rp = self._rp_kepler(de, f)
+            if(t>tmin): bursts.insert(0, [t, f, de]) # prepend
         return bursts
 
     def get_cov(f, rho=0):
