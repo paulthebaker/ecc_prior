@@ -30,7 +30,7 @@ class EccBurst(object):
         self._q = q
         self._Mchirp = q**(3/5)/(1+q)**(6/5)
 
-        # Define constants
+        # Define constants (eta = (Mc/Mtot)^(5/3))
         self._A = 59/24 * np.pi*np.sqrt(2) * (self._Mchirp)**(5/3)
         self._B = 121/236
         self._C = 85/12 * np.pi*np.sqrt(2) * (self._Mchirp)**(5/3)
