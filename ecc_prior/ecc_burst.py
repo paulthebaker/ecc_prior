@@ -59,6 +59,15 @@ class EccBurst(object):
         self._A *= (self._Mchirp/old_Mc)**(5/3)
         self._C *= (self._Mchirp/old_Mc)**(5/3)
 
+    def _rp_kepler(self, de, f):
+        """Compute pericenter separation rp for a keplerian orbit corresponding
+        to a burst in units of total mass.
+
+        :param de: instantaneous eccentricity of current burst (de = 1 - e)
+        :param f: instantaneous GW frequency of burst
+        """
+        return ((2-de)/(2*np.pi*f)**2)**(1/3)
+
     def re_forward(self, r0, de0):
         """calculate r and de of next burst
         from Loutrel & Yunes 2017
