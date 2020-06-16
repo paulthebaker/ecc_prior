@@ -7,7 +7,7 @@ from __future__ import (absolute_import, division,
 __author__ = "Paul T. Baker, Belinda D. Cheeseboro"
 #__copyright__ = ""
 #__license__ = ""
-__version__ = "2019-03-22"
+__version__ = "2019-04-24"
 
 import numpy as np
 from scipy.special import logsumexp
@@ -88,10 +88,10 @@ class NewPrior(object):
             return -np.inf
         if (Mtot <= 0.0):
             return -np.inf
-        if (destar < self._eb._min_de):
-            return -np.inf
-        if (destar > self._eb._max_de):
-            return -np.inf
+        #if (destar < self._eb._min_de):
+        #    return -np.inf
+        #if (destar > self._eb._max_de):
+        #    return -np.inf
         if (tstar < self._tmin):
             return -np.inf
         if (tstar > 0.0):
@@ -120,7 +120,9 @@ class NewPrior(object):
         # get bursts convert to SI w/ this Mtot
         tf_prior_M = self._eb.get_all_bursts(tstarM, fstarM, destar,
                                              tmin=tminM, tmax=tmaxM)
-        tf_prior_SI = np.array([[t*M2sec, f/M2sec] for t,f in tf_prior_M])
+        tf_prior = np.array([[t*M2sec, f/M2sec, de] for t,f, de in tf_prior_M])
+        ts, fs, des = tf_prior.T
+        tf_prior_SI = np.array([[t, f] for t,f in zip(ts, fs)])
 
         #Create anchor covariance matrix
         dt0 = 1/fstar
@@ -130,12 +132,12 @@ class NewPrior(object):
         
  
         #Calculate inverse covariance matrices for bursts
-        icovs = self.get_all_icovs(tstarM, fstarM, destar, tminM, tmaxM, anchor_cov, Mtot, Mc)
-        norms = [np.sqrt(np.linalg.det(c)) / (2*np.pi) for c in icovs]
+        covs, icovs = self.get_all_icovs(tstarM, fstarM, destar, tminM, tmaxM, anchor_cov, Mtot, Mc)
+        norms = [np.sqrt(np.linalg.det(c)) / (2*np.pi) for c in icovs] #normalization factor for each burst
         
         norm_N = -np.log(len(tf_prior_SI)) # normalize for number of blobs
         log_prob = 0
-        for this_tf in tf_from_BW:
+        for ii,this_tf in enumerate(tf_from_BW):
             rs = this_tf - tf_prior_SI
             args = [-0.5 * np.einsum('i,ij,j', r, ic, r)
                     for r,ic in zip(rs, icovs)]
@@ -167,19 +169,23 @@ class NewPrior(object):
         de0: previous burst eccentricity'''
         
         Mc = Mchirp*_Tsun #chirp mass in seconds
+        #t components
         tt = 1
-        tf = -((np.sqrt(2-de0)*(170*2**(1/3)*(f0*Mc)**(5/3)*np.pi**(8/3)+de0*(12+59*2**(1/3)*(f0*Mc)**(5/3)*np.pi**(8/3))))/(12*de0**(5/2)*f0**2))
-        tde = (850*2**(1/3)*(f0*Mc)**(5/3)*(8/3)+de0**2*(8-59*2**(1/3)*(f0*Mc)**(5/3)*np.pi**(8/3))-de0*(24+163*2**(1/3)*(f0*Mc)**(5/3)*np.pi**(8/3)))/(8*np.sqrt(-(-2+de0)*de0**7)*f0)
-
+        tf = -(np.sqrt(((2 - de0)/de0**3))/f0**2)
+        tde = (-3 + de0)/(np.sqrt(-(-2 + de0)*de0**5)*f0)
+    
+        #f components
+        PfMc53 = (np.pi*f0*Mc)**(5/3)
         ft = 0
-        ff = 1+(1/405)*2**(1/3)*(4140+7547*de0)*(f0*Mc)**(5/3)*np.pi**(8/3)
-        fde = (7547*f0*(f0*Mc)**(5/3)*np.pi**(8/3))/(540*2**(2/3))
-
+        ff = 1 + ((4140 + 7547*de0)*np.pi*PfMc53)/(540*2**(2/3)) + (3725*np.pi**2*PfMc53**2)/(144*2**(1/3))
+        fde = (7547*f0*np.pi*PfMc53)/(540*2**(2/3))
+    
+        #de components
         de_t = 0
-        de_f = (17*(225+1210*de0)*Mc*(f0*Mc)**(2/3)*np.pi**(8/3))/(81*2**(2/3))
-        de_de = 1+(2057*(f0*Mc)**(5/3)*np.pi**(8/3))/(135*2**(2/3))
-        J_for = np.array([[tt, tf, tde],[ft, ff, fde], [de_t, de_f, de_de]])
+        de_f = (17*(225+121*de0)*Mc*(f0*Mc)**(2/3)*np.pi**(8/3))/(81*2**(2/3))
+        de_de = 1 + (2057*PfMc53*np.pi)/(135*2**(2/3))
         
+        J_for = np.array([[tt, tf, tde],[ft, ff, fde], [de_t, de_f, de_de]])
         return J_for
 
     def get_jback(self, f1, de1, Mchirp):
@@ -191,15 +197,21 @@ class NewPrior(object):
         '''
         Mc = Mchirp*_Tsun #chirp mass in seconds
         
+        #t components
         tt = 1
-        tf = np.sqrt((2-de1)/de1**3)*(1/f1**2)
-        tde = (3 - de1)/(np.sqrt(-(-2 + de1)*de1**5)*f1)
+        tf = (np.sqrt(((2 - de1)/de1**3))/f1**2)
+        tde = (3-de1)/(np.sqrt(-(-2+de1)*de1**5)*f1)
+        
+        #f components
+        PfMc53 = (np.pi*f1*Mc)**(5/3)
         ft = 0
-        ff = 1-((2**(1/3)*(4140+7547*de1)*(f1*Mc)**(5/3)*np.pi**(8/3))/405)
-        fde = -((7547*(f1*np.pi)**(8/3)*Mc**(5/3))/(540*2**(2/3)))
+        ff = 1-(1/405)*((4140 + 7547*de1)*np.pi*PfMc53)+(3725*np.pi**2*PfMc53**2)/(144*2**(1/3))
+        fde = -(7547*f1*np.pi*PfMc53)/(540*2**(2/3))
+    
+        #de components
         de_t = 0
         de_f = -((425*Mc*(f1*Mc)**(2/3)*np.pi**(8/3))/(9*2**(2/3)))
-        de_de = 1+(2057*np.pi**(8/3)*(f1*Mc)**(5/3))/(135*2**(2/3))
+        de_de = 1 + (2057*PfMc53*np.pi)/(135*2**(2/3))
         
         J_back = np.array([[tt, tf, tde],[ft, ff, fde], [de_t, de_f, de_de]])
         return J_back
@@ -208,11 +220,11 @@ class NewPrior(object):
         """gets all the inverse covariance matrices for the corresponding bursts.
            These quantities are in SI units.
        
-           tstar: anchor burst time
-           fstar: anchor burst central frequency
+           tstar: anchor burst time in total mass units
+           fstar: anchor burst central frequency in total mass units
            destar: anchor burst eccentricity
-           tmin: starting time window
-           tmax: ending time window
+           tmin: starting time window in mass units
+           tmax: ending time window in mass units
            anchor_cov: covariance matrix for anchor burst
            Mtot: total mass in solar masses
            Mchirp: chirp mass of the binary
@@ -227,9 +239,9 @@ class NewPrior(object):
         jj = 0
 
         while rp > 3 and t < tmax:
-            t, f, de = self._eb.tf_forward(t, f, de)
+            t, f, de = self._eb.tfe_forward(t, f, de)
             rp = ((2-de)/(2*np.pi*f)**2)**(1/3)
-            if(t<tmax):
+            if(t<tmax and de < 1):
                 t, f = t*M2sec, f/M2sec #convert to SI units
                 jfor = self.get_jfor(f,de, Mchirp)#jacobian matrix for the forward direction
                 cov = jfor@covs[jj]@jfor.T#calculating the covariance matrix
@@ -238,10 +250,10 @@ class NewPrior(object):
                 jj+=1
 
         # get backward icovs
-        t, f, rp, de = tstar, fstar, rpstar, destar
+        t, f, de = tstar, fstar, destar
         while t > tmin:
-            t, f, de = self._eb.tf_backward(t, f, de)
-            if(t > tmin):
+            t, f, de = self._eb.tfe_backward(t, f, de)
+            if(t > tmin and de > 0):
                 t, f = t*M2sec, f/M2sec #convert to SI units
                 jback = self.get_jback(f,de, Mchirp) #jacobian matrix for the backward direction
                 cov = jback@covs[0]@jback.T #calculating the covariance matrix
@@ -255,4 +267,5 @@ class NewPrior(object):
         #Convert to 2x2 matrices
         icovs = np.array(icovs)[:,0:2,0:2]
     
-        return icovs
+        #return np.array(covs), icovs
+        return np.array(covs), icovs
