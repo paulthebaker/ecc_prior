@@ -62,45 +62,14 @@ class EccBurstNew(object):
         self._A *= (self._Mchirp/old_Mc)**(5/3)
         self._C *= (self._Mchirp/old_Mc)**(5/3)
 
-    def de_forward(self, f0, de0):
-        """calculate r and de of next burst
-        from Loutrel & Yunes 2017
-        :param r0:
-            periastron distance of current burst
-        :param de0:
-            instantaneous eccentricity of current burst
-            de = 1 - e
-        :return: tuple (r1, de1), next burst r and de
+    def _rp_kepler(self, de, f):
+        """Compute pericenter separation rp for a keplerian orbit corresponding
+        to a burst in units of total mass.
+
+        :param de: instantaneous eccentricity of current burst (de = 1 - e)
+        :param f: instantaneous GW frequency of burst
         """
-        Mc = self._Mchirp
-        de1 = de0 + ((85*np.pi)/(2**(2/3)*3))*(np.pi*f0*Mc)**(5/3)*(1 + (121/225)*de0)
-
-        if de1 > self._max_de:
-            #print("de WARNING: de = {:.3e}, setting de = 1"
-            #      .format(de1))
-            de1 = self._max_de
-
-        return de1
-
-    def de_backward(self, f1, de1):
-        """calculate r and de of previous burst
-        from Cheeseboro
-        :param r1:
-            periastron distance of current burst
-        :param de1:
-            instantaneous eccentricity of current burst
-            de = 1 - e
-        :return: tuple (r0, de0), previous burst r and de
-        """
-        Mc = self._Mchirp
-        de0 = de1 - ((85*np.pi*(np.pi*f1*Mc)**(5/3))/(3*2**(2/3))) + (2057*de1*(f1*Mc)**(5/3)*np.pi**(8/3))/(135*2**(2/3))
-
-        if de0 < self._min_de:
-            #print("de WARNING: de = {:.3e}, setting de = {:.3e}"
-            #      .format(de0, self._min_de))
-            de0 = self._min_de
-
-        return de0
+        return ((2-de)/(2*np.pi*f)**2)**(1/3)
 
     def re_valid(self, r, de):
         """check that r and de are in the region of validity for assumptions
@@ -110,68 +79,68 @@ class EccBurstNew(object):
         """
         return 1/r < 0.5 and de < 0.5
 
-    def tf_forward(self, t0, f0, de0, re=True):
-        """determine the time and freq next burst using the time and freq
-        of the current burst
+    def tfe_forward(self, t0, f0, de0):
+        """calculate the time, freq, and ecc of next burst
+       
+        directly calculate using new 1st order equations, bypassing rp used
+        by Loutrel & Yunes.
+
         :param t0: time of current burst
         :param f0: freq of current burst
-        :param r0: periastron distance of current burst
-        :param de0: eccentricity of current burst (de = 1 - e)
-        :param re: flag. if True, returns r1 and de1 too
+        :param de0: eccentricity of current burst (de = 1-e)
+        :return: tuple (t1, f1, de1), params for next burst
         """
-        de1 = self.de_forward(f0, de0)
-        Mc = self._Mchirp
-        
-        t1 = t0 + (1/f0*np.sqrt((2 - de0)/de0**3))*(1 - (85*np.pi/(2**(2/3)*2)*(np.pi*f0*Mc)**(5/3)/de0*(1 + 59/170)*de0))
-        f1 = f0*(1 + ((23*np.pi)/(2**(2/3)*3))*(np.pi*f0*Mc)**(5/3)*(1 + (7547/4140)*de0))
+        Po223 = np.pi/2**(2/3)
+        PfM53 = (np.pi * f0 * self._Mchirp)**(5/3)
 
-        if re:
-            return t1, f1, de1
-        else:
-            return t1, f1
+        t1 = t0 + np.sqrt((2-de0) / de0**3) / f0
+        f1 = f0 * (1 + 23/3 * Po223*PfM53 *
+                   (1 + 7547/4140*de0 + 3725/552*Po223*PfM53))
+        de1 = de0 + 85/3 * Po223*PfM53 * (1 - 121/225*de0)
 
-    def tf_backward(self, t1, f1, de1, re=True):
-        """determine the time and freq next burst using the time and freq
-        of the current burst
+        return (t1, f1, de1)
+
+    def tfe_backward(self, t1, f1, de1):
+        """calculate the time, freq, and ecc of previous burst
+       
+        directly calculate using new 1st order equations, bypassing rp used
+        by Loutrel & Yunes.
+
         :param t1: time of current burst
         :param f1: freq of current burst
-        :param r1: periastron distance of current burst
-        :param de1: eccentricity of current burst (de = 1 - e)
-        :param re: flag. if True, returns r0 and de0 too
+        :param de1: eccentricity of current burst (de = 1-e)
+        :return: tuple (t0, f0, de0), params for previous burst
         """
-        de0 = self.de_backward(f1, de1)
-        Mc = self._Mchirp
+        Po223 = np.pi/2**(2/3)
+        PfM53 = (np.pi * f1 * self._Mchirp)**(5/3)
 
-        t0 = t1 - (1/f1)*np.sqrt((2-de1)/de1**3)
-        f0 = f1*(1-((np.pi*(np.pi*f1*Mc)**(5/3))/(3*2**(2/3)))*(23+de1*(7547/180)))
+        t0 = t1 - np.sqrt((2-de1) / de1**3) / f1
+        f0 = f1 * (1 - 23/3 * Po223*PfM53
+                   * (1 + 7547/4140*de1 + 5875/368*Po223*PfM53))
+        de0 = de1 - (85/3 * Po223*PfM53 
+                     * (1 - 121/225*de1 - 295/12*Po223*PfM53))
 
-        if re:
-            return t0, f0, de0
-        else:
-            return t0, f0
+        return (t0, f0, de0)
 
     def get_all_bursts(self, tstar, fstar, destar, tmin, tmax):
         """get all bursts in time window from start to ISCO
         include one post ISCO burst if it fits in time window
         never include bursts outside of time window
         """
-        
         bursts = [[tstar, fstar, destar]]
-        rpstar =  ((2-destar)/(2*np.pi*fstar)**2)**(1/3)
-        
+        rpstar = self._rp_kepler(destar, fstar)
+
         # get forward bursts
-        t, f, rp, de = tstar, fstar, rpstar, destar
+        t, f, de, rp = tstar, fstar, destar, rpstar
         while rp > 3 and t < tmax:
-            t, f, de = self.tf_forward(t, f, de)
-            rp = ((2-de)/(2*np.pi*f)**2)**(1/3)
-            if(t<tmax):
-                bursts.append([t, f, de]) #append to bursts list
+            t, f, de = self.tfe_forward(t, f, de)
+            rp = self._rp_kepler(de, f)
+            if(t<tmax): bursts.append([t, f, de])
 
         # get backward busrts
         t, f, rp, de = tstar, fstar, rpstar, destar
-        while t > tmin:
-            t, f, de = self.tf_backward(t, f, de)
-            if(t > tmin):
-                bursts.insert(0, [t, f, de]) # prepend to bursts list
-                
+        while t > tmin and de > 0:
+            t, f, de = self.tfe_backward(t, f, de)
+            rp = self._rp_kepler(de, f)
+            if(t>tmin) and de>0: bursts.insert(0, [t, f, de]) # prepend
         return bursts
