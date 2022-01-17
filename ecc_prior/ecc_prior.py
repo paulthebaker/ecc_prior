@@ -12,7 +12,7 @@ __version__ = "2022-01-17"
 import numpy as np
 from scipy.special import logsumexp
 
-from ecc_burst import EccBurst
+from ecc_prior.ecc_burst import EccBurst
 
 _GMsun = 1.32712440018e20  # m^3/s^2
 _c = 299792458 # m/s
@@ -78,7 +78,7 @@ class EccPrior(object):
         :param tmax: max time to search for bursts [sec]
         """
         # initialize EccBurst with dummy q
-        self._eb = EccBurstNew(q=1)
+        self._eb = EccBurst(q=1)
         self._tmin = tmin
         self._tmax = tmax
 
