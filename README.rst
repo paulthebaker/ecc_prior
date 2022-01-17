@@ -19,6 +19,7 @@ Features
 * compute prior probability for a burst at any (t,f) location based on meta-parameters.
 * follows the conventions of Loutrel and Yunes (2017) [LY2017]_.
 * included ``Jupyter`` notebooks use the `ceedub <https://github.com/paulthebaker/ceedub>`_ package for wavelet transforms.
+* Results from this work can be found here: `https://journals.aps.org/prd/abstract/10.1103/PhysRevD.104.104016`
 
 .. [LY2017] `http://iopscience.iop.org/article/10.1088/1361-6382/aa7449/meta`
 
